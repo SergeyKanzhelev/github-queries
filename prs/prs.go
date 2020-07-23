@@ -26,10 +26,13 @@ func getPRsCount(query string) (int, error) {
 	resp, err := http.Get("https://api.github.com/search/issues?" + q.Encode())
 
 	if err != nil {
-		fmt.Errorf("Failed to get PRs: %v", err)
-		return -1, err
+		return -1, fmt.Errorf("failed to get PRs: %v", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return -1, fmt.Errorf("status code is not 200: %v", resp.StatusCode)
+	}
 
 	var result = prs{}
 
