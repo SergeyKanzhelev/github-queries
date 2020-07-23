@@ -7,6 +7,10 @@ import (
 	"net/url"
 	"os"
 	"time"
+
+	"golang.org/x/net/context"
+	"google.golang.org/api/option"
+	sheets "google.golang.org/api/sheets/v4"
 )
 
 type prs struct {
@@ -45,8 +49,7 @@ func getPRsCount(query string) (int, error) {
 	return result.TotalCount, nil
 }
 
-func main() {
-
+func getPRs() ([]interface{}, error) {
 	// see documentation
 	// https://developer.github.com/v3/search/#search-issues-and-pull-requests
 	// https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests
@@ -56,7 +59,7 @@ func main() {
 
 	columns := []column{
 		column{"total", baseQuery},
-		//column{"kind api-change", baseMasterQuery + "label:kind/api-change"},
+		// column{"kind api-change", baseMasterQuery + "label:kind/api-change"},
 		column{"kind bug", baseMasterQuery + "label:kind/bug"},
 		column{"kind cleanup", baseMasterQuery + "label:kind/cleanup"},
 		column{"kind deprecation", baseMasterQuery + "label:kind/deprecation"},
@@ -71,23 +74,68 @@ func main() {
 	// shrug: " -label:¯\\_(ツ)_/¯ "
 
 	header := "time"
-	result := fmt.Sprintf("%s", time.Now().Format("2006-01-02T15:04:05.999999-07:00"))
+	result := []interface{}{}
+	// result = append(result, fmt.Sprintf("%s", time.Now().Format("2006-01-02T15:04:05.999999-07:00")))
+	result = append(result, time.Now())
 	for _, v := range columns {
 		count, err := getPRsCount(v.Labels)
 		if err != nil {
-			fmt.Printf("Error for query %s: %v", v.Labels, err)
-			os.Exit(1)
+			return nil, fmt.Errorf("error for query %s: %v", v.Labels, err)
 		}
-		result += fmt.Sprintf(", %d", count)
+		result = append(result, count)
 		header += fmt.Sprintf(", \"%s\"", v.ColumnName)
 
-		q := url.Values{}
-		q.Add("q", v.Labels)
-
-		fmt.Printf("\"%s\", \"https://github.com/kubernetes/kubernetes/pulls?%s\"\n", v.ColumnName, q.Encode())
+		// q := url.Values{}
+		// q.Add("q", v.Labels)
+		// fmt.Printf("\"%s\", \"https://github.com/kubernetes/kubernetes/pulls?%s\"\n", v.ColumnName, q.Encode())
 	}
 
-	fmt.Println(header)
-	fmt.Println(result)
+	return result, nil
+}
 
+func writeToSheet(values []interface{}) error {
+	// Service account based oauth2 two legged integration
+	ctx := context.Background()
+	srv, err := sheets.NewService(ctx, option.WithCredentialsFile("credentials.json"), option.WithScopes(sheets.SpreadsheetsScope))
+	if err != nil {
+		return fmt.Errorf("unable to retrieve Sheets client: %v", err)
+	}
+
+	// Prints the names and majors of students in a sample spreadsheet:
+	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+	spreadsheetId := "1SqcmXwhX2-klRTSAz-xuPiesgaQ3e_0jNyAtemBfs0Y"
+	readRange := "Sheet1!A2:K"
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
+	if err != nil {
+		return fmt.Errorf("unable to retrieve data from sheet: %v", err)
+	}
+
+	writeRange := fmt.Sprintf("A%d", len(resp.Values)+2)
+
+	var vr sheets.ValueRange
+
+	vr.Values = append(vr.Values, values)
+
+	_, err = srv.Spreadsheets.Values.Update(spreadsheetId, writeRange, &vr).ValueInputOption("RAW").Do()
+	if err != nil {
+		return fmt.Errorf("unable to write data to sheet: %v", err)
+	}
+	return nil
+}
+
+func main() {
+
+	results, err := getPRs()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	err = writeToSheet(results)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("%v\n", results)
 }
