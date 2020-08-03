@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: sig-node-prs
 spec:
-  schedule: "@300"
+  schedule: "*/10 * * * *"
   jobTemplate:
     spec:
       template:
