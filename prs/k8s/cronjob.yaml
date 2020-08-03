@@ -1,0 +1,14 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: sig-node-prs
+spec:
+  schedule: "@300"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sig-node-prs
+            image: gcr.io/apmtips/apmtips:latest
+          restartPolicy: OnFailure

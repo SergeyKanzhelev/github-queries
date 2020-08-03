@@ -1,0 +1,37 @@
+steps:
+  # Download credentials for the service account
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: 'bash'
+    args: [ '-c', "gcloud secrets versions access latest --secret=pull-request-service-account-credentials --format='get(payload.data)' | tr '_-' '/+' | base64 -d > prs/credentials.json" ]
+
+  - name: gcr.io/cloud-builders/docker
+    args: [
+      'build',
+      '-t',
+      'gcr.io/$PROJECT_ID/sig-node-prs:$BRANCH_NAME-$COMMIT_SHA',
+      '-t',
+      'gcr.io/$PROJECT_ID/sig-node-prs:latest', 
+      'prs']
+  
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: ['apply', '-f', 'prs/k8s/']
+    env:
+    - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=main'
+  
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: [
+      'set', 
+      'image', 
+      'cronjob', 
+      'sig-node-prs', 
+      'sig-node-prs=gcr.io/$PROJECT_ID/sig-node-prs:$BRANCH_NAME-$COMMIT_SHA'
+    ]
+    env:
+    - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=main'
+    
+images: [
+    'gcr.io/$PROJECT_ID/sig-node-prs:$BRANCH_NAME-$COMMIT_SHA',
+    'gcr.io/$PROJECT_ID/sig-node-prs:latest'
+    ]
