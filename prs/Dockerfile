@@ -20,8 +20,6 @@ RUN go mod download
 # Copy the code into the container
 COPY . .
 
-RUN ls -la
-
 # Build the application
 RUN go build -o prs .
 
@@ -30,8 +28,6 @@ WORKDIR /dist
 
 # Copy binary from build to prs folder
 RUN cp /build/prs .
-
-RUN ls -la
 
 # Build a small image
 FROM scratch

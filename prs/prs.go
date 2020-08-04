@@ -102,8 +102,8 @@ func writeToSheet(values []interface{}) error {
 	}
 
 	// Prints the names and majors of students in a sample spreadsheet:
-	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-	spreadsheetId := "1SqcmXwhX2-klRTSAz-xuPiesgaQ3e_0jNyAtemBfs0Y"
+	// https://docs.google.com/spreadsheets/d/1VW5_Eq8MzswfDi9xEvfYyP8edF_Ny7MBANIsJXT3VGw/edit
+	spreadsheetId := "1VW5_Eq8MzswfDi9xEvfYyP8edF_Ny7MBANIsJXT3VGw"
 	readRange := "Sheet1!A2:K"
 	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
 	if err != nil {

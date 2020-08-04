@@ -5,9 +5,9 @@ steps:
     args:  
       - '-c'
       - | 
-        gcloud secrets versions access latest --secret=pull-request-service-account-credentials --format='get(payload.data)' | tr '_-' '/+' | base64 -d > credentials.json
-        ls
-        cp credentials.json prs/credentials.json
+        gcloud secrets versions access latest --secret=pull-request-service-account-credentials --format='get(payload.data)' | \
+        tr '_-' '/+' | \
+        base64 -d > prs/credentials.json
 
   - name: gcr.io/cloud-builders/docker
     args: [
