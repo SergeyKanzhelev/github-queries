@@ -1,5 +1,8 @@
 FROM golang:alpine AS builder
 
+# Ca-certificates is required to call HTTPS endpoints.
+RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
+
 # Set necessary environmet variables needed for our image
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
@@ -29,6 +32,7 @@ RUN cp /build/prs .
 # Build a small image
 FROM scratch
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist/prs /
 
 # Command to run
