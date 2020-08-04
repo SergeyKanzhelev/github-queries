@@ -20,6 +20,8 @@ RUN go mod download
 # Copy the code into the container
 COPY . .
 
+RUN ls -la
+
 # Build the application
 RUN go build -o prs .
 
@@ -29,11 +31,14 @@ WORKDIR /dist
 # Copy binary from build to prs folder
 RUN cp /build/prs .
 
+RUN ls -la
+
 # Build a small image
 FROM scratch
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist/prs /
+COPY --from=builder /build/prs/credentials.json /credentials.json
 
 # Command to run
 ENTRYPOINT ["/prs"]
