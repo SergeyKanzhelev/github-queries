@@ -1,0 +1,14 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: sig-node-weekly
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sig-node-weekly
+            image: gcr.io/apmtips/sig-node-weekly:latest
+          restartPolicy: OnFailure

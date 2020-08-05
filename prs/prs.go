@@ -101,7 +101,6 @@ func writeToSheet(values []interface{}) error {
 		return fmt.Errorf("unable to retrieve Sheets client: %v", err)
 	}
 
-	// Prints the names and majors of students in a sample spreadsheet:
 	// https://docs.google.com/spreadsheets/d/1VW5_Eq8MzswfDi9xEvfYyP8edF_Ny7MBANIsJXT3VGw/edit
 	spreadsheetId := "1VW5_Eq8MzswfDi9xEvfYyP8edF_Ny7MBANIsJXT3VGw"
 	readRange := "Sheet1!A2:K"
@@ -110,7 +109,7 @@ func writeToSheet(values []interface{}) error {
 		return fmt.Errorf("unable to retrieve data from sheet: %v", err)
 	}
 
-	writeRange := fmt.Sprintf("A%d", len(resp.Values)+2)
+	writeRange := fmt.Sprintf("Sheet1!A%d", len(resp.Values)+2)
 
 	var vr sheets.ValueRange
 

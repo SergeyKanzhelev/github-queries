@@ -34,7 +34,7 @@ FROM scratch
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist/prs /
-COPY --from=builder /build/credentials.json /credentials.json
+COPY ./credentials.json /credentials.json 
 
 # Command to run
 ENTRYPOINT ["/prs"]

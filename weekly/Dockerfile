@@ -1,0 +1,40 @@
+FROM golang:alpine AS builder
+
+# Ca-certificates is required to call HTTPS endpoints.
+RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
+
+# Set necessary environmet variables needed for our image
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
+# Move to working directory /build
+WORKDIR /build
+
+# Copy and download dependency using go mod
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+# Copy the code into the container
+COPY . .
+
+# Build the application
+RUN go build -o weekly .
+
+# Move to /dist directory as the place for resulting binary folder
+WORKDIR /dist
+
+# Copy binary from build to weekly folder
+RUN cp /build/weekly .
+
+# Build a small image
+FROM scratch
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /dist/weekly /
+COPY ./credentials.json /credentials.json 
+
+# Command to run
+ENTRYPOINT ["/weekly"]
