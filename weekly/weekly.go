@@ -71,14 +71,16 @@ func getPRs() ([]interface{}, error) {
 
 	baseQuery := "repo:kubernetes/kubernetes type:pr label:sig/node "
 
+	var dateNowStr = dateNow.Format("2006-01-02T15:04:05-0700")
 	var lastMeetingDateStr = lastMeeting.Format("2006-01-02T15:04:05-0700")
+	var dateRange = lastMeetingDateStr + ".." + dateNowStr
 
 	columns := []column{
 		column{"total", baseQuery + "is:open "},
-		column{"created", baseQuery + " created:>=" + lastMeetingDateStr},
-		column{"updated", baseQuery + "is:open updated:>=" + lastMeetingDateStr + " created:<" + lastMeetingDateStr},
-		column{"closed", baseQuery + " is:unmerged closed:>=" + lastMeetingDateStr},
-		column{"merged", baseQuery + " merged:>=" + lastMeetingDateStr},
+		column{"created", baseQuery + " created:" + dateRange},
+		column{"updated", baseQuery + "is:open updated:" + dateRange + " created:<" + lastMeetingDateStr},
+		column{"closed", baseQuery + " is:unmerged closed:" + dateRange},
+		column{"merged", baseQuery + " merged:" + dateRange},
 	}
 
 	// shrug: " -label:¯\\_(ツ)_/¯ "
@@ -88,7 +90,7 @@ func getPRs() ([]interface{}, error) {
 	result = append(result, lastMeetingDateStr)
 
 	header += "time"
-	result = append(result, dateNow.Format("2006-01-02T15:04:05-0700"))
+	result = append(result, dateNowStr)
 	for _, v := range columns {
 		count, err := getPRsCount(v.Labels)
 		if err != nil {
