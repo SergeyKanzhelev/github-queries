@@ -69,6 +69,13 @@ func getPRs() ([]interface{}, error) {
 	year, month, day := lastMeeting.Date()
 	lastMeeting = time.Date(year, month, day, 17, 0, 0, 0, time.UTC)
 
+	// if meeting has already started, uncomment below:
+	// dateNow = lastMeeting
+	lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
+	//lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
+	//lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
+	//lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
+
 	baseQuery := "repo:kubernetes/kubernetes type:pr label:sig/node "
 
 	var dateNowStr = dateNow.Format("2006-01-02T15:04:05-0700")
@@ -78,7 +85,7 @@ func getPRs() ([]interface{}, error) {
 	columns := []column{
 		column{"total", baseQuery + "is:open "},
 		column{"created", baseQuery + " created:" + dateRange},
-		column{"updated", baseQuery + "is:open updated:" + dateRange + " created:<" + lastMeetingDateStr},
+		column{"updated", baseQuery + "updated:" + dateRange + " created:<" + lastMeetingDateStr},
 		column{"closed", baseQuery + " is:unmerged closed:" + dateRange},
 		column{"merged", baseQuery + " merged:" + dateRange},
 	}
