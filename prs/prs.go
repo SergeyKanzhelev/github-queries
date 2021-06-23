@@ -75,8 +75,8 @@ func getPRs() ([]interface{}, error) {
 
 	header := "time"
 	result := []interface{}{}
-	// result = append(result, fmt.Sprintf("%s", time.Now().Format("2006-01-02T15:04:05.999999-07:00")))
-	result = append(result, time.Now())
+	result = append(result, fmt.Sprintf("%s", time.Now().Format("01/02/2006 15:04")))
+	//result = append(result, time.Now())
 	for _, v := range columns {
 		count, err := getPRsCount(v.Labels)
 		if err != nil {
