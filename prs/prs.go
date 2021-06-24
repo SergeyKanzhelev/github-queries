@@ -115,7 +115,7 @@ func getBugs() ([]interface{}, error) {
 	var dateNow = time.Now().UTC()
 
 	var dateNowStr = dateNow.Format("2006-01-02T15:04:05-0700")
-	var dateRange1day = dateNow.AddDate(0, 0, -1).UTC().Format("2006-01-02T15:04:05-0700") + ".." + dateNowStr
+	var dateRange2days = dateNow.AddDate(0, 0, -2).UTC().Format("2006-01-02T15:04:05-0700") + ".." + dateNowStr
 	var dateRange10days = dateNow.AddDate(0, 0, -10).UTC().Format("2006-01-02T15:04:05-0700") + ".." + dateNowStr
 	var dateRange90days = dateNow.AddDate(0, 0, -90).UTC().Format("2006-01-02T15:04:05-0700") + ".." + dateNowStr
 	var dateOver90days = dateNow.AddDate(0, 0, -90).UTC().Format("2006-01-02T15:04:05-0700")
@@ -132,7 +132,7 @@ func getBugs() ([]interface{}, error) {
 		column{"kind flake", baseQuery + "label:kind/flake"},
 		column{"kind other", baseQuery + "-label:kind/bug -label:kind/cleanup -label:kind/deprecation -label:kind/design -label:kind/documentation -label:kind/failing-test -label:kind/feature -label:kind/support -label:kind/flake"},
 
-		column{"updated last day", baseQuery + "updated:" + dateRange1day},
+		column{"updated last 2 days", baseQuery + "updated:" + dateRange2days},
 		column{"updated last 10 days", baseQuery + "updated:" + dateRange10days},
 		column{"updated last 90 days", baseQuery + "updated:" + dateRange90days},
 		column{"updated over 90 days", baseQuery + "updated:<" + dateOver90days},
