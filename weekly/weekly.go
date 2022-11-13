@@ -71,7 +71,7 @@ func getPRs() ([]interface{}, error) {
 
 	// if meeting has already started, uncomment below:
 	// dateNow = lastMeeting
-	lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
+	//lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
 	//lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
 	//lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
 	//lastMeeting = lastMeeting.AddDate(0, 0, -7).UTC()
