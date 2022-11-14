@@ -54,7 +54,7 @@ func getColumnID(ctx context.Context, client *github.Client, org string, project
 
 	if err != nil {
 		fmt.Printf("Projects.ListProjectColumns returned error: %v", err)
-		return -1, errors.New("Projects.ListProjectColumns returned error", err)
+		return -1, errors.New("Projects.ListProjectColumns returned error")
 	}
 
 	fmt.Printf("Project: %s\n", *targetProject.URL)
