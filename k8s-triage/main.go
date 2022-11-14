@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -46,14 +47,14 @@ func getColumnID(ctx context.Context, client *github.Client, org string, project
 
 	if targetProject == nil {
 		fmt.Printf("Project not found")
-		os.Exit(1)
+		return -1, errors.New("Project not found")
 	}
 
 	columns, _, err := client.Projects.ListProjectColumns(ctx, *targetProject.ID, &github.ListOptions{Page:1, PerPage: 100})
 
 	if err != nil {
 		fmt.Printf("Projects.ListProjectColumns returned error: %v", err)
-		os.Exit(1)
+		return -1, errors.New("Projects.ListProjectColumns returned error", err)
 	}
 
 	fmt.Printf("Project: %s\n", *targetProject.URL)
@@ -70,7 +71,7 @@ func getColumnID(ctx context.Context, client *github.Client, org string, project
 
 	if targetColumn == nil {
 		fmt.Printf("Column not found")
-		os.Exit(1)
+		return -1, errors.New("Column not found")
 	}
 
 	fmt.Printf("Column: %d %s\n", *targetColumn.ID, *targetColumn.Name)
