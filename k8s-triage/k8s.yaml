@@ -41,7 +41,7 @@ spec:
     service:
       name: k8s-triage
       port:
-        number: 8080
+        number: 80
 ---
 kind: Service
 apiVersion: v1
@@ -53,9 +53,8 @@ spec:
   selector:
     run: k8s-triage
   ports:
-  - port: 8080
+  - port: 80
     targetPort: 8080
-  type: NodePort
 ---
 apiVersion: networking.gke.io/v1beta2
 kind: ManagedCertificate
