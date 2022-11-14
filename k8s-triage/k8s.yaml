@@ -73,3 +73,24 @@ spec:
 #data:
 #  access_token: ACCESS_TOKEN
 #EOF
+
+kubectl list ingress
+kubectl delete ingress k8s-triage
+
+kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-triage
+  annotations:
+    kubernetes.io/ingress.regional-static-ip-name: k8s-triage-ip
+    networking.gke.io/managed-certificates: k8s-triage-cert
+  labels:
+    app: k8s-triage
+spec:
+  defaultBackend:
+    service:
+      name: k8s-triage
+      port:
+        number: 80
+EOF
