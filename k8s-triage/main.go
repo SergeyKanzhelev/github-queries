@@ -28,8 +28,15 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/", handler)
+	fmt.Printf("Starting the web server on %v", port)
+
+	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/triage", handler)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 }
 
 func getColumnID(ctx context.Context, client *github.Client, org string, projectNumber int, columnsName string) (int64, error) {
@@ -122,6 +129,9 @@ func addIssuesToColumn(ctx context.Context, client *github.Client, query string,
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Printf("Processing request")
+
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: access_token},
