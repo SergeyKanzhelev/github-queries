@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - image: gcr.io/apmtips/k8s-triage:latest
-        name: web
+        name: k8s-triage
         ports:
         - containerPort: 80
 ---
