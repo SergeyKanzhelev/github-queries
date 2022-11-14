@@ -18,7 +18,7 @@ spec:
       - image: gcr.io/apmtips/k8s-triage:latest
         name: k8s-triage
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         env:
         - name: ACCESS_TOKEN
           valueFrom:
@@ -41,7 +41,7 @@ spec:
     service:
       name: k8s-triage
       port:
-        number: 80
+        number: 8080
 ---
 kind: Service
 apiVersion: v1
@@ -53,7 +53,7 @@ spec:
   selector:
     run: k8s-triage
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
   type: NodePort
 ---
