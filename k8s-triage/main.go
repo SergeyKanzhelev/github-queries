@@ -12,13 +12,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var access_token = ""
+var access_token = os.Getenv("ACCESS_TOKEN")
 
 func main() {
 
 	access_token = os.Getenv("ACCESS_TOKEN")
-
-	fmt.Printf("Access token: %v", access_token)
 
 	if len(access_token) == 0 {
 		log.Fatal("access_token is needed")
@@ -132,7 +130,7 @@ func addIssuesToColumn(ctx context.Context, client *github.Client, query string,
 
 func handler(w http.ResponseWriter, r *http.Request) {
 
-	fmt.Printf("Processing request")
+	fmt.Printf("Processing request %v", access_token)
 
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
