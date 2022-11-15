@@ -18,6 +18,8 @@ func main() {
 
 	access_token = os.Getenv("ACCESS_TOKEN")
 
+	fmt.Printf("Access token: %v", access_token)
+
 	if len(access_token) == 0 {
 		log.Fatal("access_token is needed")
 		os.Exit(2)
