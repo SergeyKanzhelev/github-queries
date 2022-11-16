@@ -17,6 +17,9 @@ spec:
       containers:
       - image: gcr.io/apmtips/k8s-triage:latest
         name: k8s-triage
+        env:
+        - name: PORT
+          value: "8080"
         ports:
         - containerPort: 8080
         env:

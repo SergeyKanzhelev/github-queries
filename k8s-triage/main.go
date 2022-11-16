@@ -19,7 +19,7 @@ func main() {
 	access_token = os.Getenv("ACCESS_TOKEN")
 
 	if len(access_token) == 0 {
-		log.Fatal("access_token is needed")
+		fmt.Printf("access_token is needed")
 		os.Exit(2)
 	}
 
@@ -28,24 +28,76 @@ func main() {
 		port = "8080"
 	}
 
-	fmt.Printf("Starting the web server on %v", port)
+	fmt.Printf("Starting the web server on port %v, access token: %v***\n", port, access_token[0:5])
 
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/triage", handler)
+	http.HandleFunc("/triage/node-prs", nodePRsIndex)
+	http.HandleFunc("/triage/node-prs/do", nodePRsDo)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+func nodePRsIndex(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello, this is a node PRs triage page", r.URL.Path[1:])
+}
+
+func nodePRsDo(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Printf("Processing node PRs")
+
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: access_token},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+
+	client := github.NewClient(tc)
+
+	columnID, err := getColumnID(ctx, client, "kubernetes", 43, "Triage")
+
+	if err != nil {
+		fmt.Fprintf(w, "something went wrong: %q", err)
+		return
+	}
+
+	addIssuesToColumn(ctx, client, "is:pr is:open label:sig/node -project:kubernetes/43 repo:kubernetes/test-infra", columnID)
+	addIssuesToColumn(ctx, client, "is:open label:sig/node+-project:kubernetes/43+repo:kubernetes/test-infra", columnID)
+	addIssuesToColumn(ctx, client, "is:open label:sig/node is:pr label:area/test -project:kubernetes/43 repo:kubernetes/kubernetes", columnID)
+	addIssuesToColumn(ctx, client, "is:issue is:open label:sig/node  label:area/test -project:kubernetes/43 repo:kubernetes/kubernetes", columnID)
+	addIssuesToColumn(ctx, client, "is:open label:sig/node is:pr label:kind/failing-test -project:kubernetes/43 repo:kubernetes/kubernetes", columnID)
+	addIssuesToColumn(ctx, client, "is:issue is:open label:sig/node label:kind/failing-test -project:kubernetes/43 repo:kubernetes/kubernetes", columnID)
+
+	columnID, err = getColumnID(ctx, client, "kubernetes", 59, "Triage")
+
+	if err != nil {
+		fmt.Fprintf(w, "something wrong: %q", err)
+		return
+	}
+
+	addIssuesToColumn(ctx, client, "is:open label:sig/node is:issue label:kind/bug org:kubernetes -project:kubernetes/59", columnID)
+
+	columnID, err = getColumnID(ctx, client, "kubernetes", 49, "Triage")
+
+	if err != nil {
+		fmt.Fprintf(w, "something wrong: %q", err)
+		return
+	}
+
+	addIssuesToColumn(ctx, client, "is:open label:sig/node is:pr org:kubernetes -project:kubernetes/49", columnID)
+
+	fmt.Fprintf(w, "Hello, World!\n")
 }
 
 func getColumnID(ctx context.Context, client *github.Client, org string, projectNumber int, columnsName string) (int64, error) {
 	projects, _, err := client.Organizations.ListProjects(ctx, org, &github.ProjectListOptions{State: "open", ListOptions: github.ListOptions{Page:1, PerPage: 100} })
 
+	if err != nil {
+		fmt.Printf("Organizations.ListProjects returned error: %v", err)
+		return -1, errors.New("Organizations.ListProjects returned error", err)
+	}
+
 	var targetProject *github.Project
 
 	for _, p := range projects {
-		//fmt.Printf("Project: %d %s %s %d\n", *p.ID, *p.Name, *p.HTMLURL, *p.Number)
+		fmt.Printf("Project: %d %s %s %d\n", *p.ID, *p.Name, *p.HTMLURL, *p.Number)
 		if *p.Number == projectNumber {
 			targetProject = p
 			break
@@ -128,49 +180,3 @@ func addIssuesToColumn(ctx context.Context, client *github.Client, query string,
 
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Printf("Processing request %v", access_token)
-
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: access_token},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-
-	client := github.NewClient(tc)
-
-	columnID, err := getColumnID(ctx, client, "kubernetes", 43, "Triage")
-
-	if err != nil {
-		fmt.Fprintf(w, "something wrong: %q", err)
-		return
-	}
-
-	addIssuesToColumn(ctx, client, "is:pr is:open label:sig/node -project:kubernetes/43 repo:kubernetes/test-infra", columnID)
-	addIssuesToColumn(ctx, client, "is:open label:sig/node+-project:kubernetes/43+repo:kubernetes/test-infra", columnID)
-	addIssuesToColumn(ctx, client, "is:open label:sig/node is:pr label:area/test -project:kubernetes/43 repo:kubernetes/kubernetes", columnID)
-	addIssuesToColumn(ctx, client, "is:issue is:open label:sig/node  label:area/test -project:kubernetes/43 repo:kubernetes/kubernetes", columnID)
-	addIssuesToColumn(ctx, client, "is:open label:sig/node is:pr label:kind/failing-test -project:kubernetes/43 repo:kubernetes/kubernetes", columnID)
-	addIssuesToColumn(ctx, client, "is:issue is:open label:sig/node label:kind/failing-test -project:kubernetes/43 repo:kubernetes/kubernetes", columnID)
-
-	columnID, err = getColumnID(ctx, client, "kubernetes", 59, "Triage")
-
-	if err != nil {
-		fmt.Fprintf(w, "something wrong: %q", err)
-		return
-	}
-
-	addIssuesToColumn(ctx, client, "is:open label:sig/node is:issue label:kind/bug org:kubernetes -project:kubernetes/59", columnID)
-
-	columnID, err = getColumnID(ctx, client, "kubernetes", 49, "Triage")
-
-	if err != nil {
-		fmt.Fprintf(w, "something wrong: %q", err)
-		return
-	}
-
-	addIssuesToColumn(ctx, client, "is:open label:sig/node is:pr org:kubernetes -project:kubernetes/49", columnID)
-
-	fmt.Fprintf(w, "Hello, World!\n")
-}
