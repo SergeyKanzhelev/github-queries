@@ -30,26 +30,65 @@ func main() {
 
 	fmt.Printf("Starting the web server on port %v, access token: %v***\n", port, access_token[0:5])
 
+	http.HandleFunc("/", landing)
+	http.HandleFunc("/triage", landing)
+
 	http.HandleFunc("/triage/node-prs", nodePRsIndex)
 	http.HandleFunc("/triage/node-prs/do", nodePRsDo)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
+func landing(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Wrong page %s", r.URL.Path[1:])
+}
+
 func nodePRsIndex(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, this is a node PRs triage page", r.URL.Path[1:])
+	fmt.Fprintf(w, "Hello, this is a node PRs triage page %s", r.URL.Path[1:])
+}
+
+// This type implements the http.RoundTripper interface
+type LoggingRoundTripper struct {
+	Proxied http.RoundTripper
+}
+
+func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response, e error) {
+	// Do "before sending requests" actions here.
+	fmt.Printf("Sending request to %v\n", req.URL)
+	fmt.Printf("Sending request to %+v\n", req.Header)
+
+	// Send the request, get the response (or the error)
+	res, e = lrt.Proxied.RoundTrip(req)
+
+	// Handle the result.
+	if (e != nil) {
+			fmt.Printf("Error: %v", e)
+	} else {
+			fmt.Printf("Received %v response\n", res.Status)
+	}
+
+	return
 }
 
 func nodePRsDo(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Processing node PRs")
 
-	ctx := context.Background()
+	// Use the custom HTTP client when requesting a token.
+	httpClient := &http.Client{
+		Transport: LoggingRoundTripper{http.DefaultTransport},
+ }
+
+ ctx := context.Background()
+
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, httpClient)
+
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: access_token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
+
 
 	columnID, err := getColumnID(ctx, client, "kubernetes", 43, "Triage")
 
