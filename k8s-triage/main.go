@@ -91,7 +91,7 @@ func getColumnID(ctx context.Context, client *github.Client, org string, project
 
 	if err != nil {
 		fmt.Printf("Organizations.ListProjects returned error: %v", err)
-		return -1, errors.New("Organizations.ListProjects returned error", err)
+		return -1, fmt.Errorf("Organizations.ListProjects returned error: %w", err)
 	}
 
 	var targetProject *github.Project
@@ -113,7 +113,7 @@ func getColumnID(ctx context.Context, client *github.Client, org string, project
 
 	if err != nil {
 		fmt.Printf("Projects.ListProjectColumns returned error: %v", err)
-		return -1, errors.New("Projects.ListProjectColumns returned error")
+		return -1, fmt.Errorf("Projects.ListProjectColumns returned error: %w", err)
 	}
 
 	fmt.Printf("Project: %s\n", *targetProject.URL)
