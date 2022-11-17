@@ -7,16 +7,18 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/google/go-github/v40/github"
 	"golang.org/x/oauth2"
 )
 
-var access_token = os.Getenv("ACCESS_TOKEN")
+var access_token = ""
 
 func main() {
 
 	access_token = os.Getenv("ACCESS_TOKEN")
+	access_token = strings.Trim(access_token, "\n\t ")
 
 	if len(access_token) == 0 {
 		fmt.Printf("access_token is needed")
