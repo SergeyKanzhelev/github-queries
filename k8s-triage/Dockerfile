@@ -2,7 +2,7 @@ FROM golang:1.22.0 as builder
 WORKDIR /app
 RUN ls
 COPY * ./
-RUN CGO_ENABLED=0 GOOS=linux go build -o /k8s-triage
+RUN GOOS=linux go build -o /k8s-triage
 
 FROM gcr.io/distroless/base-debian12
 WORKDIR /
